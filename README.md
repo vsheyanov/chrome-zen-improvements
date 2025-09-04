@@ -1,16 +1,21 @@
-# Tab Event Logger Chrome Extension
+# Tab Manager & Logger Chrome Extension
 
-A Chrome extension that logs tab events (create, update, activate, close) to the browser console for debugging and monitoring purposes.
+A Chrome extension that intelligently detects tabs opened via the "New Tab" button and automatically moves them to the beginning of the tab bar with smart scrolling, while logging all tab events for debugging and monitoring purposes.
 
 > **📁 Extension Location**: The actual Chrome extension files are located in the `extension/` directory. Load that directory in Chrome, not the root project directory.
 
 ## Features
 
-- 🆕 Logs when new tabs are created
+- 🔍 **Smart New Tab Detection** - Uses multiple criteria to detect tabs opened via New Tab button (vs links, duplicates, etc.)
+- 📌 **Selective Auto-reorder** - Only moves tabs that were opened via New Tab button to the first position
+- 🚀 **Intelligent Auto-scroll** - Automatically scrolls to show moved tabs, respects pinned tabs
+- 🎯 **Perfect Workflow** - New Tab button → Move to front → Scroll to show → Activate
+- 📊 **Detailed Logging** - Shows detection criteria, scoring, and reasoning for each tab
+- 🆕 Logs when new tabs are created (with detection analysis and movement tracking)
 - ✅ Logs when tabs finish loading
-- 🔄 Logs when tabs are activated/switched
+- 🔄 Logs when tabs are activated/switched  
 - ❌ Logs when tabs are closed
-- 📊 Simple popup interface showing extension status
+- 🎨 Enhanced popup interface with testing instructions
 
 ## Installation
 
@@ -26,6 +31,42 @@ A Chrome extension that logs tab events (create, update, activate, close) to the
 2. Navigate to the Console tab
 3. Perform tab actions (open, close, switch tabs)
 4. View the logged events in the console
+
+## How Auto-Scroll Works
+
+When you have many tabs open and create a new tab:
+
+1. **Normal behavior**: New tab appears at the end, often not visible
+2. **With this extension**: 
+   - New tab is moved to position 0 (first tab)
+   - Tab is automatically activated (focused)
+   - Chrome scrolls the tab bar to show the new tab
+   - You immediately see and can use the new tab
+
+This is especially useful when you have 10+ tabs open and the tab bar requires scrolling to see all tabs.
+
+## How New Tab Detection Works
+
+The extension uses a scoring system with 4 criteria to detect if a tab was opened via the "New Tab" button:
+
+### Detection Criteria (scored out of 4):
+
+1. **New Tab URL** - URL is `chrome://newtab/`, `about:blank`, or similar new tab page
+2. **Is Active** - Tab is immediately active (New Tab button behavior) 
+3. **Has No Opener** - No `openerTabId` (not opened from another tab/link)
+4. **New Tab Title** - Title is "New Tab", empty, or similar
+
+### Scoring:
+- **3-4/4**: Detected as New Tab button → Tab gets moved to front
+- **0-2/4**: Not detected as New Tab button → Tab stays in place
+
+### Examples:
+- **Ctrl+T / New Tab button**: ✅ Typically scores 4/4 and gets moved
+- **Right-click link → Open in new tab**: ❌ Usually scores 1-2/4, stays in place
+- **Ctrl+Click link**: ❌ Usually scores 1/4, stays in place
+- **Duplicate tab**: ❌ Usually scores 0-1/4, stays in place
+
+The console shows the detailed scoring for each new tab, so you can see exactly why tabs are or aren't being moved.
 
 ## Project Structure
 
