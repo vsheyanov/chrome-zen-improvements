@@ -1,3 +1,7 @@
+# Disclamer
+
+This Chrome extension was fully vibe-coded as an attempt to bring some of the useful features from Zen to Brave browser (which supports vertical tabs). I'll be checking your issues and try to make it better.
+
 # Tab Manager & Logger Chrome Extension
 
 A Chrome extension that intelligently detects tabs opened via the "New Tab" button and automatically moves them to the beginning of the tab bar with smart scrolling, while logging all tab events for debugging and monitoring purposes.
