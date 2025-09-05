@@ -145,4 +145,4 @@ tabs-extension/
 
 ## License
 
-This project is for educational purposes. Feel free to modify and extend as needed.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
