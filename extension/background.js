@@ -39,6 +39,108 @@ function detectNewTabButtonClick(tab) {
     return score >= 3; // Require at least 3 out of 4 criteria
 }
 
+// Handle keyboard shortcuts
+chrome.commands.onCommand.addListener(async (command) => {
+    console.log('⌨️ Keyboard command received:', command);
+
+    if (command === 'copy-current-url') {
+        try {
+            // Get the current active tab
+            const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+            if (activeTab && activeTab.url) {
+                console.log('📋 Attempting to copy URL:', activeTab.url);
+
+                // Use chrome.scripting to inject a script that copies to clipboard
+                // This is more reliable than navigator.clipboard in service workers
+                await chrome.scripting.executeScript({
+                    target: { tabId: activeTab.id },
+                    func: (url) => {
+                        // Function to show toast notification
+                        function showToast(message) {
+                            // Remove any existing toast
+                            try {
+                                const existingToast = document.getElementById('url-copy-toast');
+                                if (existingToast) {
+                                    existingToast.remove();
+                                }
+                            } catch (error) {
+                                console.warn('Failed to remove existing toast:', error);
+                            }
+
+                            // Create toast element
+                            const toast = document.createElement('div');
+                            toast.id = 'url-copy-toast';
+                            toast.textContent = message;
+
+                            // Toast styles
+                            Object.assign(toast.style, {
+                                position: 'fixed',
+                                bottom: '20px',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                backgroundColor: '#333',
+                                color: '#fff',
+                                padding: '12px 24px',
+                                borderRadius: '6px',
+                                fontSize: '14px',
+                                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                zIndex: '10000',
+                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                                opacity: '0',
+                                transition: 'opacity 0.3s ease-in-out',
+                                pointerEvents: 'none'
+                            });
+
+                            // Add to page
+                            document.body.appendChild(toast);
+
+                            // Fade in
+                            setTimeout(() => {
+                                toast.style.opacity = '1';
+                            }, 10);
+
+                            // Fade out and remove after 2.5 seconds
+                            setTimeout(() => {
+                                toast.style.opacity = '0';
+                                setTimeout(() => {
+                                    if (toast.parentNode) {
+                                        toast.parentNode.removeChild(toast);
+                                    }
+                                }, 300);
+                            }, 2500);
+                        }
+
+                        // Copy URL to clipboard
+                        navigator.clipboard.writeText(url).then(() => {
+                            console.log('✅ URL copied to clipboard:', url);
+                            showToast('URL Successfully Copied!');
+                        }).catch((error) => {
+                            // Fallback: create a temporary textarea element
+                            const textarea = document.createElement('textarea');
+                            textarea.value = url;
+                            document.body.appendChild(textarea);
+                            textarea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textarea);
+                            console.log('✅ URL copied to clipboard (fallback method):', url);
+                            showToast('URL Successfully Copied!');
+                        });
+                    },
+                    args: [activeTab.url]
+                });
+
+                console.log('✅ Copy script injected successfully');
+            } else {
+                console.log('⚠️ No active tab or URL found');
+            }
+        } catch (error) {
+            console.error('❌ Failed to copy URL to clipboard:', error);
+            console.log('🔍 Error details:', error.message);
+        }
+    }
+});
+
 // Listen for when a new tab is created
 chrome.tabs.onCreated.addListener(async (tab) => {
     console.log('🆕 New tab opened');
